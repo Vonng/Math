@@ -6,13 +6,14 @@
 
 
 
-## [概率统计](stat/)
+## [概率统计](stats/)
 
 * [概率论基础](stats/probability-intro.md)
 
 
 * [描述统计](stats/descriptive-statistics.md)
-* [假设检验原理：p值，α，效应量，检验力](hypothesis-test.md)
+* [推断统计](stats/inferential-statistics.md)
+* 抽样分布
 
 
 * 组合分析

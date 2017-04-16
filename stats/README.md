@@ -15,8 +15,8 @@
 
 来自：《心理统计——行为科学统计导论》
 
-* 1-7：[描述统计](descriptive-statistics.md)
-* 8-11：[假设检验原理：p值，α，效应量，检验力](hypothesis-test.md)
+* [描述统计](descriptive-statistics.md)
+* [推断统计](inferential-statistics.md)
 
 
 
@@ -24,8 +24,7 @@
 
 # 统计推断
 
-* 1：[概率论基础](probability-intro.md)
-
+* [概率论基础](probability-intro.md)
 
 
 
