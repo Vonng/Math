@@ -8,14 +8,15 @@
 
 ## [概率统计](stat/)
 
-* [概率论基础	《统计推断》](stat/probability-intro.md)
+* [概率论基础](stats/probability-intro.md)
 
 
-* [描述统计 《心理统计——行为统计科学导论》](stat/descriptive-statistics.md)
-* 统计推断  《心理统计——行为统计科学导论》
+* [描述统计](stats/descriptive-statistics.md)
+* [假设检验原理：p值，α，效应量，检验力](hypothesis-test.md)
+
+
 * 组合分析
 * 常见统计分布
-
 
 
 ## [线性代数](linalg/)
@@ -53,3 +54,11 @@
 * PKI
 * 密码学协议
 * OpenSSL
+
+
+
+## [神经网络与深度学习](nndl/)
+
+* 神经网络原理
+* BP算法原理
+* tensorflow环境与Helloworld
