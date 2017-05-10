@@ -30,9 +30,8 @@ MIT线性代数课程+《线性代数及其应用》合并笔记。线性方程�
 * 第二种：Column Picture 列图像：从这个角度看，每一列代表各方程在某一特定维度上的分量。通过对于这些向量的组合，得到方程右边解向量。（向量方程）
 * 第三种：Matrix Picture 矩阵图像，将方程组系数写作相关系数矩阵 (Coefficient Matrix)的形式。则一个方程组可以表示成一个等价的矩阵代数等式$Ax=b$（矩阵方程）
 
-要注意系数矩阵(Coefficient Matrix)/增广炬阵(Augmented Matrix)的区别：系数矩阵**A**添上右边的常数列**b**，得到增广矩阵。
-
-矩阵的**大小(Size)**说明它包含的行数和列数，一个$m \times n$矩阵是一个有**m行n列的矩形阵列**。
+  要注意系数矩阵(Coefficient Matrix)/增广炬阵(Augmented Matrix)的区别：系数矩阵**A**添上右边的常数列**b**，得到增广矩阵。
+  矩阵的**大小(Size)**说明它包含的行数和列数，一个$m \times n$矩阵是一个有**m行n列的矩形阵列**。
 $$
 \left[\begin{matrix}
 a & b \\
