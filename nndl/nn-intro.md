@@ -1,23 +1,24 @@
-# 神经网络概念
+# 神经网络基础
 
 [author]: # "Vonng (fengruohang@outlook.com)"
 [tags]: # "神经网络，数学"
 [category]: # "math/nndl"
-[mtime]: #	"2017-04-19 18:00 "
-神经网络相关基本概念，来自《神经网络设计》与《NNDL》
+[mtime]: #	"2017-05-11 10:00 "
+神经网络相关基本知识笔记
 
 ---
 
 
 
-## 神经元模型
+## 神经网络表示
 
-神经元(neuron)是构成神经网络的基本单位。神经网络是从大脑的工作原理得到启发的。
-人脑中的神经元具有一个轴突和多个树突，每个树突都是一个输入，当所有树突的输入兴奋程度超过某一阈值，神经元就会被激活，沿着轴突发射出信号，产生输出。
+### 神经元模型
+
+神经网络从大脑的工作原理得到启发，可用于解决通用的学习问题。神经网络的基本组成单元是**神经元(neuron)**。每个神经元具有一个轴突和多个树突。每个连接到本神经元的树突都是一个输入，当所有输入树突的输入兴奋程度超过某一阈值，神经元就会被激活。激活的神经元会沿着轴突发射出信号，产生输出，轴突会分出以万计的树突，连接至其他神经元，作为其他神经元的输入。在数学上，神经元可以用**感知机**的模型表示。
 
 ![](images/neuron.png)
 
-如图所示，一个神经元的数学模型包括以下内容：
+一个神经元的数学模型主要包括以下内容：
 
 | 名称                         | 符号   | 说明                         |
 | -------------------------- | ---- | -------------------------- |
@@ -28,285 +29,450 @@
 | 激活函数 (activation function) | $σ$  | 接受带权输入，给出激活值。              |
 | 激活值 (activation)           | $a$  | $a = σ(\vec{w}·\vec{x}+b)$ |
 
-激活函数通常使用S型函数：又称为sigmoid或者logsig，因为该函数具有良好的特性：光滑可导，形状接近感知机所使用的硬极限传输函数，函数值与导数值计算方便。
+$$
+\left[ \begin{array}{a} a_1 \\ ⋮ \\ a_s \end{array}\right]
+= \sigma(
+ 	\left[ \begin{matrix} 
+ 		w_{1} & ⋯  & w_{n} \\  
+ 	\end{matrix}\right]  ·
+ 	\left[ \begin{array}{x} x_1 \\ ⋮ \\ ⋮ \\ x_n \end{array}\right] + 
+ 	b
+)
+$$
+
+激活函数通常使用S型函数，又称为sigmoid或者logsig，因为该函数具有良好的特性：**光滑可微**，形状接近感知机所使用的硬极限传输函数，函数值与**导数值计算方便**。
 $$
 σ(z) = \frac 1 {1+e^{-z}}
 $$
 
 $$
-σ' = z(1-z)
+σ'(z) = σ(z)(1-σ(z))
 $$
 
-也有一些其他的激活函数，例如：硬极限传输函数(hardlim)，对称硬极限函数(hardlims)，线性函数(purelin) ， 对称饱和线性函数(satlins) ，对数-s形函数(logsig)  ，正线性函数(poslin)，双曲正切S形函数(tansig)，竞争函数(compet)，有时候为了学习速度或者其他原因也会使用，这里表过不提。
+也有一些其他的激活函数，例如：硬极限传输函数(hardlim)，对称硬极限函数(hardlims)，线性函数(purelin) ， 对称饱和线性函数(satlins) ，对数-s形函数(logsig)  ，正线性函数(poslin)，双曲正切S形函数(tansig)，竞争函数(compet)，有时候为了学习速度或者其他原因也会使用，表过不提。
 
-
-
-## 神经网络模型（单层）
+### 单层神经网络模型
 
 可以并行操作的神经元组成的集合，称为神经网络的一层。
 
-现在考虑一个神经网络的某一层，该层由$s$个神经元组成。对原来单个神经元的数学模型进行扩展：
-| 名称   | 符号   | 说明                                       |
-| ---- | ---- | ---------------------------------------- |
-| 输入   | $x$  | 列向量，保持不变。维度为N                            |
-| 权值   | $W$  | 由一个N维行向量，变为S个N维行向量组成的矩阵W，维度为SxN          |
-| 偏置   | $b$  | 由一个标量值，变为一个S维列向量。                        |
-| 带权输入 | $z$  | $z=Wx + b$ ，同样由标量变为S维列向量，无偏权值和计算方式，由点积变为矩阵乘法。 |
-| 激活函数 | $σ$  | 由接受标量给出标量，变为接受带权输入$\vec{z}$列向量，给出激活值列向量$\vec{a}$ |
-| 激活值  | $a$  | $a = σ(W\vec{x}+\vec{b})$ ，同$b,z$，由标量值变为S维列向量。 |
+现在考虑一个具有$n$个输入，$s$个神经元(输出)的单层神经网络，则原来单个神经元的数学模型可扩展如下：
 
-对于具有$s$个神经元，$n$个输入的单层神经网络，其计算逻辑可表示为：
+| 名称   | 符号   | 说明                                      |
+| ---- | ---- | --------------------------------------- |
+| 输入   | $x$  | 同层所有神经元共用输入，故输入保持不变，仍为$(n×1)$列向量        |
+| 权值   | $W$  | 由$1 × n$行向量，变为$s × n$矩阵，每一行表示一个神经元的权值信息 |
+| 偏置   | $b$  | 由$1 × 1$标量变为$s × 1$列向量                  |
+| 带权输入 | $z$  | 由$1 × 1$标量变为$s × 1$列向量                  |
+| 激活值  | $a$  | 由$1 × 1$标量变为$s × 1$列向量                  |
+
 $$
-\left[ \begin{array}{a} a_1 \\ \vdots \\ a_s \end{array}\right]
+\left[ \begin{array}{a} a_1 \\ ⋮ \\ a_s \end{array}\right]
 = \sigma(
  	\left[ \begin{matrix} 
- 		w_{1,1} & \cdots  & w_{1,n} \\  
- 		\vdots & \ddots  & \vdots  \\ 
- 		w_{s,1} & \cdots  & w_{s,n} \\  
- 	\end{matrix}\right]  \cdot
- 	
- 	\left[ \begin{array}{x} x_1 \\ \vdots \\ \vdots \\ x_n \end{array}\right] + 
- 	\left[ \begin{array}{b} b_1 \\ \vdots \\ b_s \end{array}\right]
+ 		w_{1,1} & ⋯  & w_{1,n} \\  
+ 		⋮ & ⋱  & ⋮  \\ 
+ 		w_{s,1} & ⋯  & w_{s,n} \\  
+ 	\end{matrix}\right]  ·
+ 	\left[ \begin{array}{x} x_1 \\ ⋮ \\ ⋮ \\ x_n \end{array}\right] + 
+ 	\left[ \begin{array}{b} b_1 \\ ⋮ \\ b_s \end{array}\right]
 )
 $$
 
+单层神经网络能力有限，通常都会将多个单层神经网络的输出和输入相连，组成多层神经网络。
 
-## 神经网络模型（多层）
+### 多层神经网络模型
 
-假设有一个$L$层的神经网络，每一层的神经元个数依次为：$l_1,l_2,\dots,l_L$。
+* 多层神经网络的层数从1开始计数，第一层为**输入层**，第$L$层为**输出层**，其它的层称为**隐含层**。
+* 每一层神经网络都有自己的参数$W,b,z,a,⋯$，为了区别，使用上标区分：$W^2,W^3,⋯$。
+* 整个多层网络的输入，即为输入层的激活值$x=a^1$，整个网络的输出，即为输出层的激活值：$y'=a^L$。
+* 因为输入层没有神经元，所以该层所有参数中只有激活值$a^1$作为网络输入值而存在，没有$W^1,b^1,z^1$等。
 
-神经网络的层数从1开始数，第一层为**输入层**，第L层为**输出层**，其它层称为**隐含层**。
+现在考虑一个$L​$层的神经网络，其各层神经元个数依次为：$d_1,d_2,⋯,d_L​$。则该网络的数学模型可扩展如下：
 
-每一层神经网络都有自己的参数$x,W,b,z,a$，为了区别，使用上表标记层数：$W^2,W^3,\dots$。不过
+| 名称   | 符号   | 说明                                       |
+| ---- | ---- | ---------------------------------------- |
+| 输入   | $x$  | 输入仍然保持不变，为$(d_1×1)$列向量                   |
+| 权值   | $W$  | 由$s × n$矩阵扩展为$L-1$个矩阵组成的列表：$W^2_{d_2 × d_1},⋯,W^L_{d_L × d_{L-1}}$ |
+| 偏置   | $b$  | 由$s × 1$列向量扩展为$L-1$个列向量组成的列表：$b^2_{d_2},⋯,b^L_{d_L}$ |
+| 带权输入 | $z$  | 由$s × 1$列向量扩展为$L-1$个列向量组成的列表：$z^2_{d_2},⋯,z^L_{d_L}$ |
+| 激活值  | $a$  | 由$s × 1$列向量扩展为**$L$个列向量**组成的列表：$a^1_{d_1},a^2_{d_2},⋯,a^L_{d_L}$ |
 
-第一层作为输入层，只有激活值$a^1$，没有其他的参数。
+$$
+\left[ \begin{array}{a} a^l_1 \\ ⋮ \\ a^l_{d_l} \end{array}\right]
+= \sigma(
+ 	\left[ \begin{matrix} 
+ 		w^l_{1,1} & ⋯  & w^l_{1,d_{l-1}} \\  
+ 		⋮ & ⋱  & ⋮  \\ 
+ 		w^l_{d_l,1} & ⋯  & w^l_{d_l,d_{l-1}} \\  
+ 	\end{matrix}\right]  ·
+ 	\left[ \begin{array}{x} a^{l-1}_1 \\ ⋮ \\ ⋮ \\ a^{l-1}_{d_{l-1}} \end{array}\right] + 
+ 	\left[ \begin{array}{b} b^l_1 \\ ⋮ \\ b^l_{d_l} \end{array}\right]
+)
+$$
+
+#### 权值矩阵的涵义
+
+多层神经网络的权值由一系列权值矩阵表示
+
+* 第$l$层网络的权值矩阵可记作$W^l$，表示前一层（$l-1$）到本层（$l$ ）的连接权重
+* $W^l$的第$j$行可记作$W^l_{j*}$ ，表示从$l-1$层所有$d_{l-1}$个神经元出发，到达$l$ 层$j$号神经元的连接权重
+* $W^l$的第$k$列可记作$W^l_{*k}$ ，表示从$l-1$层第$k$号神经元出发，到达$l$ 层所有$d_l$个神经元的连接权重
+* $W^l$的$j$行$k$列可记作$W^l_{jk}$，表示从$l-1$层$k$号神经元出发，到达$l$ 层$j$神经元的连接权重
+* 如图，$w^3_{24}$表示从2层4号神经元到3层2号神经元的连接权值：
+
+![](images/nn-weight.png)
+
+只要记住，权值矩阵$W$的**行标表示本层神经元**的标号，**列标表示上层神经元**的标号即可。
 
 
 
-## 神经网络的前馈
+## 神经网络推断
 
-**前馈（feed forward）**，是指神经网络接受输入，产生输出的一次过程。又称为一次**推断（inference）**。计算过程如下：
+**前馈（feed forward）**是指神经网络接受输入，产生输出的一次计算过程。又称为一次**推断（inference）**。
+
+计算过程如下：
 $$
 \begin{align}
 a^1  &= x \\
 a^2  &=  σ(W^2a^1 + b^2) \\
 a^3  &=  σ(W^3a^2 + b^3) \\
-\cdots \\
+⋯ \\
 a^L  &= σ(W^La^{L-1} + b^L) \\
 y  &= a^L \\
 \end{align}
 $$
 
+推断实际上就是一系列矩阵乘法与向量运算，一个训练好的神经网络可以高效地使用各种语言实现。神经网络的功能是通过推断而体现的。推断实现起来很简单，但如何**训练神经网络**才是真正的难点。
 
 
 
-## 神经网络的训练
+## 神经网络训练
 
-如何利用神经网络推断是很简单的，难点在于**如何调整神经网络的参数**。
+神经网络的训练，是调整网络中的权值参数与偏置参数，从而提高网络工作效果的过程。
 
-通常使用梯度下降(Gradient Descent)的方法来调整神经网络的参数。
+通常使用**梯度下降(Gradient Descent)**的方法来调整神经网络的参数，首先要定义一个**代价函数(cost function)**用以衡量神经网络的误差，然后通过梯度下降方法计算合适的参数修正量，从而**最小化**网络误差。
 
+### 代价函数
 
+代价函数是用于衡量神经网络工作效果的函数，通常应当满足以下两个条件：
 
-### 梯度下降(Gradient Descent) 
+1. **代价可以写成神经网络输出的函数**
+2. **总体代价等于个体样本代价的均值**：$C=\frac{1}{n} \sum_x C_x$ 
 
-通常可以利用梯度下降的方法进行学习。利用梯度下降方法， 首先要定义一个代价函数，表示神经网络的误差，然后通过调整参数来**最小化**这个误差，实现参数的选择。 
-
-#### 代价函数
-
-最常用的代价函数是：**二次代价函数**，又称为**均方误差(MeanSquareError)**
+最常用的一个简单的代价函数是：**二次代价函数**，又称为**均方误差(MeanSquareError)**
 $$
-C(w,b) = \frac{1}{2n} \sum_x{{||y(x)-a||}^2}
+C(w,b) = \frac{1}{2n} \sum_x{{\|y(x)-a\|}^2}
 $$
-之所以使用二次代价而不是直接使用诸如“正确分类图像个数”作为代价函数，是因为我们需要一个平滑可导的函数作为代价函数，才可以通过**梯度下降法**，来调整网络中的参数。
+前面的系数$\frac 1 2$是为了求导后简洁的形式而添加的，$n$是使用样本的数量，这里$y$和$x$都是已知的样本数据。
 
-#### 梯度下降
+理论上任何可以反映网络工作效果的指标都可以作为代价函数。但之所以使用MSE，而不是诸如“正确分类图像个数”的指标，是因为只有一个**光滑可导**的代价函数才可以使用**梯度下降**(Gradient Descent)调整参数。
 
-神经网络的参数浩瀚如烟，通过微积分求偏导来算梯度是不现实的。
+#### 样本的使用
 
-假设我们希望调整神经网络中的某个参数，因为每层的激活函数都是光滑可导的。所以轻微调整某个参数的值，最终的误差值也会发生连续的轻微的变化。不断地轻微改变每个参数的值，使得最终总误差值向下降的方向前进，最终达到极值点。这就是梯度下降法的核心思路。
+代价函数的计算需要一个或多个训练样本。当训练样本非常多时，如果每轮训练都要重新计算网络整个训练集上所有样本的误差函数，开销非常大，速度难以接受。若只使用总体的一小部分，计算就能快很多。不过这样做依赖一个假设：**随机样本的代价，近似等于总体的代价。**
 
-#### 具体细节
-
-现在假设代价函数$C$为两个变量$v1,v2$的可微函数，梯度下降，实际上就是选择合适的$\Delta v$，使得$\Delta C$为负。由微积分可知：
-$$
-\Delta C \approx \frac{\partial C}{\partial v_1} \Delta v_1 +
-  \frac{\partial C}{\partial v_2} \Delta v_2
-$$
-这里$\Delta v$是向量：$\Delta v = \left[ \begin{array}{v}  \Delta v_1 \\ \Delta v_2 \end{array}\right]$，$\Delta C$是梯度向量$\left[ \begin{array}{C} \frac{\partial C}{\partial v_1} \\ \frac{\partial C}{\partial v_2} \end{array} \right]$，于是上式可重写为
-$$
-\Delta C \approx \nabla C \cdot \Delta v
-$$
-那么怎样选择$\Delta v$才能令代价函数的变化量为负呢？一种简单办法是令$\Delta v = -\eta \nabla C$
-$$
-\Delta C \approx  - \eta {\nabla C}^2
-$$
-即令$\Delta v$取一个与梯度$\nabla C$共线反向的小向量，表示自变量前进的方向。
-
-通过不断地调整$v$：$v \rightarrow v' = v -\eta \nabla C$，使得$C$获得一个全局的最小值。
-
-对于神经网络，学习的参数实际上是权重$w$与偏置量$b$。不过这里的$w,b$数目非常巨大
-$$
-w_k \rightarrow w_k' = w_k-\eta \frac{\partial C}{\partial w_k} \\
-b_l \rightarrow b_l' = b_l-\eta \frac{\partial C}{\partial b_l}
-$$
-
-这里使用的代价函数是MSE，是每一个训练样本误差平方的**均值**。但训练样本非常多，如果每次训练都要重新计算误差函数，开销是很大的。如果每次训练只使用所有训练样本的一小部分，就会快很多。这依赖一个假设：**不同随机样本计算得到的MSE，近似等于总体的MSE。**
-
-常用的梯度下降法有：
+按照使用样本的方式，梯度下降又分为：
 
 - 批量梯度下降法(Batch GD)：最原始的形式，更新每一参数都使用所有样本。可以得到全局最优解，易于并行实现，但当样本数量很多时，训练速度极慢。
 
 
 - 随机梯度下降法(Stochastic GD)：解决BGD训练慢的问题，每次随机使用一个样本。训练速度快，但准确度下降，且并不是全局最优，也不易于并行实现。
-- 小批量梯度下降法MBGD：在每次更新参数时使用b个样本（例如每次10个样本），在BGD与SGD中取得折中。
-- 每次使用一个样本时，SGD又称为在线，online，递增学习。
+- 小批量梯度下降法(MiniBatchGD)：在每次更新参数时使用b个样本（例如每次10个样本），在BGD与SGD中取得折中。
+
+每次只使用一个样本时，又称为在线学习或递增学习。
+
+当训练集的所有样本都被使用过一轮，称为完成一轮迭代。
 
 
 
+### 梯度下降算法 
 
-#### 问题与挑战
+若希望通过调整神经网络中的某个参数来减小整体代价，则可以考虑微积分的方法。因为每层的激活函数，以及最终的代价函数都是光滑可导的。所以最终的代价函数$C$对于某个我们感兴趣的参数$w,b$也是光滑可导的。轻微拨动某个参数的值，最终的误差值也会发生连续的轻微的变化。不断地沿着参数的梯度方向，轻微调整每个参数的值，使得总误差值向下降的方向前进，最终达到极值点。这就是梯度下降法的思想。
 
-应用梯度下降算法时，问题的难点在于：**如何计算梯度？** 
+#### 梯度下降的逻辑
 
-反向传播算法可以解决这一问题，将在下一章独立讨论。
+现在假设代价函数$C$为两个变量$v_1,v_2$的可微函数，梯度下降实际上就是选择合适的$Δv$，使得$ΔC$为负。由微积分可知：
+$$
+ΔC ≈ \frac{∂C}{∂v_1} Δv_1 + \frac{∂C}{∂v_2} Δv_2
+$$
+这里$Δv$是向量：$Δv = \left[ \begin{array}{v}  Δv_1 \\ Δv_2 \end{array}\right]$，$ΔC$是梯度向量$\left[ \begin{array}{C} \frac{∂C}{∂v_1} \\ \frac{∂C}{∂v_2} \end{array} \right]$，于是上式可重写为
+$$
+ΔC ≈ ∇C \cdot Δv
+$$
+怎样的$Δv$才能令代价函数的变化量为负呢？一种简单办法是令即$Δv$取一个与梯度$∇C$共线反向的小向量，此时$Δv = -η∇C$ ，则损失函数变化量$ΔC ≈  -η{∇C}^2$，可以确保为负值。按照这种方法，通过不断调整$v$：$v → v' = v -η∇C$，使得$C$最终达到极小值点。
+
+这也即梯度下降的涵义所在：**所有参数都会沿着自己的梯度方向不断进行轻微调整，使得总误差下降至极点。**
+
+对于神经网络，学习的参数实际上是权重$w$与偏置量$b$。原理是一样的，不过这里的$w,b$数目非常巨大
+$$
+w →w' = w-η\frac{∂C}{∂w} \\
+b → b' = b-η\frac{∂C}{∂b}
+$$
+
+真正棘手的问题来了，梯度$∇C_w,∇C_b$怎么算呢？使用微分的方法，通过$\frac {C(p+ε)-C} {ε}$来求参数的梯度，那么网络中的每一个参数都需要进行一次前馈和一次$C(p+ε)$的计算，这样的开销在参数数目浩瀚如烟的神经网络面前是不可忍受的。
+
+**反向传播(Back propagation)算法**可以解决这一问题。通过巧妙的简化， 可以在一次前馈与一次反传中，高效地完成整个网络中所有参数梯度的计算。
 
 
 
-## 神经网络样例
+## 反向传播
 
-这里给出一个神经网络应当有的结构(Python)
+反向传播算法接受一个打标样本$(x,y)$作为输入，给出网络中所有参数$(W,b)$的梯度。
+
+### 反向传播误差δ
+
+反向传播算法需要引入一个新的概念：误差$δ$。误差的定义源于这样一种朴素的思想：如果轻微修改某个神经元的带权输入$z$，而最终代价$C$已不再变化，则可认为$z$已经到达极值点，调整的很好了。于是损失函数$C$对某神经元带权输入$z$的偏导$\frac {∂C}{∂z}$可以作为该神经元上误差$δ$的度量。故定义第$l$层的第$j^{th}$个神经元上的误差$δ^l_j$为：
+$$
+δ^l_j ≡ \frac{∂C}{∂z^l_j}
+$$
+与激活值$a$，带权输入$z$一样，误差也可以写作向量。第$l$层的误差向量记作$δ^l$。之所以使用带权输入$z$而不是激活值$a$来定义误差，也是有着巧妙的设计的。
+
+引入反向传播误差的概念，是为了通过误差向量来计算梯度$∇C_w,∇C_b$。这需要解决四个问题：
+
+1. 递推首项：如何计算输出层的误差：$δ^L$
+2. 递推方程：如何根据后一层的误差$δ^{l+1}$计算前一层误差$δ^l$
+3. 权值梯度：如何根据本层误差$δ^l$计算本层权值梯度$∇W^l$
+4. 偏置梯度：如何根据本层误差$δ^l$计算本层偏置梯度$∇b^l$
+
+这四个问题，可以通过四个反向传播方程得到解决。
+
+### 反向传播方程
+
+| 方程                                    | 说明        | 编号   |
+| ------------------------------------- | --------- | ---- |
+| $δ^L = ∇C_a ⊙ σ'(z^L)$                | 输出层误差计算公式 | BP1  |
+| $δ^l = (W^{l+1})^T δ^{l+1} ⊙ σ'(z^l)$ | 误差传递公式    | BP2  |
+| $∇C_{W^l} = δ^l × {(a^{l-1})}^T $     | 权值梯度计算公式  | BP3  |
+| $∇C_b = δ^l$                          | 偏置梯度计算公式  | BP4  |
+
+当误差函数取MSE：$C = \frac 1 2 \|\vec{y} -\vec{a}\|^2= \frac 1 2 [(y_1 - a_1)^2 + \cdots + (y_{d_L} - a_{d_L})^2]$，激活函数取sigmoid时：
+
+
+| 计算方程                                     | 说明                                       | 编号   |
+| ---------------------------------------- | ---------------------------------------- | ---- |
+| $δ^L = (a^L - y) ⊙(1-a^L)⊙ a^L$          | 输出层误差需要$a^L$和$y$                         | BP1  |
+| $δ^l = (W^{l+1})^T δ^{l+1} ⊙(1-a^l)⊙ a^l $ | 本层误差需要：后层权值$W^{l+1}$，后层误差$δ^{l+1}$，本层输出$a^l$ | BP2  |
+| $∇C_{W^l} = δ^l × {(a^{l-1})}^T $        | 权值梯度需要：本层误差$δ^l$，前层输出$a^{l-1}$           | BP3  |
+| $∇C_b = δ^l$                             | 偏置梯度需要：本层误差$δ^l$                         | BP4  |
+
+### 反向传播方程的证明
+
+----
+
+#### BP1：输出层误差方程
+
+输出层误差方程给出了根据网络输出$a^L$与标记结果$y$计算输出层误差$δ$的方法：
+$$
+δ^L = (a^L - y) ⊙(1-a^L)⊙ a^L
+$$
+
+##### 证明
+
+因为$a^L = σ(z^L)$，本方程可以直接从反向传播误差的定义，通过**$a^L$作为中间变量链式求导**推导得出：
+$$
+\frac{∂C}{∂z^L} = \frac{∂C}{∂a^L} \frac{∂a^L}{∂z^L}  = ∇C_a σ'(z^L)
+$$
+而因为误差函数$C = \frac 1 2 \|\vec{y} -\vec{a}\|^2= \frac 1 2 [(y_1 - a_1)^2 + ⋯ + (y_{d_L} - a_{d_L})^2]$，方程两侧对某个$a_j$取偏导则有：
+$$
+\frac {∂C}{∂a^L_j} = (a^L_j-y_j)
+$$
+因为误差函数中，其他神经元的输出不会影响到误差函数对神经元$j$输出的偏导，系数也正好平掉了。写作向量形式即为：$ (a^L - y) $。另一方面，易证$σ'(z^L) = (1-a^L)⊙ a^L$。
+
+QED
+
+--------
+
+#### BP2：误差传递方程
+
+误差传递方程给出了根据后一层误差计算前一层误差的方法：
+$$
+δ^l = (W^{l+1})^T δ^{l+1} ⊙ σ'(z^l)
+$$
+
+##### 证明
+
+本方程可以直接从反向传播误差的定义，以后一层所有神经元的带权输入$z^{l+1}$作为中间变量进行链式求导推导出：
+$$
+δ^l_j = \frac {∂C}{∂z^l_j} 
+= \sum_{k=1}^{d_{l+1}}  \frac{∂C}{∂z^{l+1}_k} \frac{∂z^{l+1}_k}{∂z^{l}_j}
+= \sum_{k=1}^{d_{l+1}}  (δ^{l+1}_k  \frac{∂z^{l+1}_k}{∂z^{l}_j})
+$$
+通过链式求导，引入后一层带权输入作为中间变量，从而在方程右侧引入后一层误差的表达形式。现在要解决的就是$\frac{∂z^{l+1}_k}{∂z^{l}_j}$ 是什么的问题。由带权输入的定义$z = wx + b$可知：
+$$
+z^{l+1}_k = W^{l+1}_{k,*} ·a^l + b^{l+1}_k  =   W^{l+1}_{k,*} · σ(z^l) + b^{l+1}_k  
+= \sum_{j=1}^{d_{l}}(w_{kj}^{l+1} σ(z^l_j)) + b^{l+1}_k
+$$
+两边同时对$z^{l}_j$求导可以得到：
+$$
+\frac{∂z^{l+1}_k}{∂z^{l}_j} = w^{l+1}_{kj} σ'(z^l)
+$$
+回代则有：
+$$
+\begin{align}
+δ^l_j & = \sum_{k=1}^{d_{l+1}}  (δ^{l+1}_k  \frac{∂z^{l+1}_k}{∂z^{l}_j})  \\
+& = σ'(z^l)   \sum_{k=1}^{d_{l+1}}     (δ^{l+1}_k  w^{l+1}_{kj}) \\
+& = σ'(z^l) ⊙  [(δ^{l+1}) · W^{l+1}_{*.j}] \\
+& = σ'(z^l) ⊙ [(W^{l+1})^T_{j,*} ·  (δ^{l+1}) ]\\
+\end{align}
+$$
+这里，对后一层所有神经元的误差权值之积求和，可以改写为两个向量的点积：
+
+* 后一层$k$个神经元的误差向量
+* 后一层权值矩阵的第$j$列，即所有从本层$j$神经元出发前往下一层所有$k$个神经元的权值。
+
+又因为向量点积可以改写为矩阵乘法：以行向量乘以列向量的方式进行，所以将权值矩阵转置，原来拿的是列，现在则拿出了行向量。这时候再改写回向量形式为：
+$$
+δ^l =  σ'(z^l) ⊙ (W^{l+1})^Tδ^{l+1}
+$$
+QED
+
+-----
+
+#### BP3：权值梯度方程
+
+每一层的权值梯度$∇C_{W^l}$可以根据本层的误差向量（列向量），与上层的输出向量（行向量）的外积得出。
+$$
+∇C_{W^l} = δ^l × {(a^{l-1})}^T
+$$
+
+##### 证明
+由误差的定义，以$w^l_{jk}$作为中间变量求偏导可得：
+$$
+\begin{align}
+δ^l_j & = \frac{∂C}{∂z^l_j} 
+= \frac{∂C}{∂w^l_{jk}} \frac{∂ w_{jk}}{∂ z^l_j} 
+= ∇C_{w^l_{jk}} \frac{∂w_{jk}}{∂ z^l_j} 
+\end{align}
+$$
+由定义可得，第$l$层第$j$个神经元的带权输入$z^l_j$：
+$$
+z^l_j = \sum_k w^l_{jk} a^{l-1}_k + b^l_j
+$$
+两侧对$w_{jk}^l$求导得到：
+$$
+\frac{\partial z_j}{\partial w^l_{jk}} = a^{l-1}_k
+$$
+
+代回则有：
+$$
+∇C_{w^l_{jk}} = δ^l_j \frac{∂ z^l_j}{∂w_{jk}} =   δ^l_j a^{l-1}_k
+$$
+观察可知，向量形式是一个外积：
+$$
+∇C_{W^l} = δ^l × {(a^{l-1})}^T
+$$
+
+- **本层误差行向量**：$δ^l$，维度为（$d_l \times 1$)
+
+
+- **上层激活列向量**：$(a^{l-1})^T​$，维度为（$1 \times d_{l-1}​$）
+
+QED
+
+-----
+
+#### BP4：偏置梯度方程
+
+$$
+∇C_b = δ^l
+$$
+
+##### 证明
+
+由定义可知：
+$$
+δ^l_j  = \frac{∂C}{∂z^l_j} 
+= \frac{∂C}{∂b^l_j} \frac{∂b_j}{∂z^l_j} 
+= ∇C_{b^l_{j}} \frac{∂b_j}{∂z^l_j}
+$$
+因为$z^l_j = W^l_{*,j} \cdot a^{l-1} + b^l_j$，两侧对$z_j^l$求导得到$1=\frac{∂b_j}{∂z^l_j}$。于是回代得到：$∇C_{b^l_{j}} =δ^l_j $ ，
+
+QED
+
+-----
+
+至此，四个方程均已证毕。只要将其转换为代码即可工作。
+
+
+
+## 神经网络的实现
+
+作为概念验证，这里给出了MNIST手写数字分类神经网络的Python实现。
 
 ```python
 # coding: utf-8
-import numpy as np
+# author: vonng(fengruohang@outlook.com)
+# ctime: 2017-05-10
+
 import random
-
-
-def sigmoid(z):
-    """激活函数logsig"""
-    return 1.0 / (1.0 + np.exp(-z))
-
-
-def sigmoid_prime(z):
-    """激活函数的导数"""
-    return sigmoid(z) * (1 - sigmoid(z))
-
+import numpy as np
 
 class Network(object):
     def __init__(self, sizes):
-        ''' Usage:  net = Network([2,3,1])'''
-
-        # 按照给定尺寸初始化一个多层神经网络，这里有3层。每层分别有2，3，1个神经元
-        self.num_layers = len(sizes)
         self.sizes = sizes
-        # weights[0]其实是第二层的权值矩阵。每个权值矩阵行数由本层的神经元数指定
-        # 每个权值矩阵的列数由本层的输入个数，即上一层的神经元数指定。
-        self.weights = [np.random.randn(neuron_size, input_size)
-                        for input_size, neuron_size in zip(sizes[:-1], sizes[1:])]
-        # 第一层网络只有激活值，没有偏置与权值。所以biases[0]其实是第二层的偏置向量。
-        self.biases = [np.random.randn(neuron_size, 1)
-                       for neuron_size in sizes[1:]]
+        self.L = len(sizes)
+        self.layers = range(0, self.L - 1)
+        self.w = [np.random.randn(y, x) for x, y in zip(sizes[:-1], sizes[1:])]
+        self.b = [np.random.randn(x, 1) for x in sizes[1:]]
 
     def feed_forward(self, a):
-        '''进行一次前馈计算'''
-        # 输入的值a是第一层(输入层)的激活值向量，应当为sizes[0] x 1的列向量
-        for w, b in zip(self.weights, self.biases):
-            a = sigmoid(np.dot(w, a) + b)
+        for l in self.layers:
+            a = 1.0 / (1.0 + np.exp(-np.dot(self.w[l], a) - self.b[l]))
         return a
 
-    def SGD(self, train_data, epoches, m, eta, test_data=None):
-        """
-            输入训练数据集，调整神经网络参数的核心方法
-            train_data:     用于评估的数据集[(x,y),...]
-            epoches:        迭代周期数
-            m:              样本小批量尺寸
-            eta:            学习速率
-            test_data:      测试数据集，用于评估效果
-        """
-        n = len(train_data)
-        for round in xrange(epoches):
-            # 每一轮迭代时，将训练集划分为大小为m的的Mini batch
-            random.shuffle(train_data)
-            # 用每个小批样本更新一次参数
-            for mini_batch in [train_data[k:k + m] for k in xrange(0, n, m)]:
-                self.update_mini_batch(mini_batch, eta)
+    def gradient_descent(self, train, test, epoches=30, m=10, eta=3.0):
+        for round in range(epoches):
+            # generate mini batch
+            random.shuffle(train)
+            for batch in [train_data[k:k + m] for k in xrange(0, len(train), m)]:
+                x = np.array([item[0].reshape(784) for item in batch]).transpose()
+                y = np.array([item[1].reshape(10) for item in batch]).transpose()
+                n, r, a = len(batch), eta / len(batch), [x]
+                
+                # forward & save activations
+                for l in self.layers:
+                    a.append(1.0 / (np.exp(-np.dot(self.w[l], a[-1]) - self.b[l]) + 1))
 
-            # 如果提供了测试集，每轮迭代结束时将评估其表现。
-            if test_data:
-                print "Epoch {0}: {1}/{2}".format(
-                    round, self.evaluate(test_data), len(test_data))
-            else:
-                print "Epoch {0} complete".format(round)
-
-    def update_mini_batch(self, mini_batch, eta):
-        # 按照b,w的形状初始化权值偏置的梯度： ∇w,∇b
-        nabla_w = [np.zeros(w.shape) for w in self.weights]
-        nabla_b = [np.zeros(b.shape) for b in self.biases]
-
-        # 对于小批量中的每个样本，都要进行一次反向传播
-        for x, y in mini_batch:
-            # 使用反向传播算法计算∇b, ∇w的修正值Δ∇w, Δ∇b
-            delta_nabla_w, delta_nabla_b = self.back_propation(x, y)
-
-            # 将修正值应用到梯度上∇w, ∇b
-            nabla_w = [nw + delta_nw for nw,
-                       delta_nw in zip(nabla_w, delta_nabla_w)]
-            nabla_b = [nb + delta_nb for nb,
-                       delta_nb in zip(nabla_b, delta_nabla_b)]
-
-        n = len(mini_batch)
-        # 计算得到梯度后，乘以学习速率再除以样本数量，应用至网络的参数b,w 上。
-        self.weights = [w - (eta / n) * nw
-                        for w, nw in zip(self.weights, nabla_w)]
-        self.biases = [b - (eta / n) * nb
-                       for b, nb in zip(self.biases, nabla_b)]
-
-    def evaluate(self, test_data):
-        """对测试集进行预测，返回成功预测的数目"""
-        test_results = [(np.argmax(self.feed_forward(x)), y)
-                        for x, y in test_data]
-        return sum(int(x == y) for (x, y) in test_results)
-
-    def back_propation(self, x, y):
-        """Magic Here"""
-        # TODO: 反向传播算法，接受一个打标样本(x,y),返回所有参数的梯度(调整量) Δ∇b, Δ∇w，
-        # return np.zeros(w.shape), np.zeros(b.shape)
-
-        nabla_w = [np.zeros(w.shape) for w in self.weights]
-        nabla_b = [np.zeros(b.shape) for b in self.biases]
-
-        # 逐层前馈
-        activation = x
-        activations = [x]  # 保存每层的激活值a。第一层的激活值就是输入x
-        zs = []            # 保存每层的带权输入z，第一层没有
-        for b, w in zip(self.biases, self.weights):
-            z = np.dot(w, activation) + b   # 计算并保存带权输入
-            zs.append(z)
-            activation = sigmoid(z)  # 计算并保存激活值
-            activations.append(activation)
-
-        # 反向传播
-        delta = (activations[-1] - y) * sigmoid_prime(zs[-1])  # 最后一层的误差
-        nabla_b[-1] = delta
-        nabla_w[-1] = np.dot(delta, activations[-2].transpose())
-        for l in xrange(2, self.num_layers):
-            z = zs[-l]
-            sp = sigmoid_prime(z)
-            delta = np.dot(self.weights[-l + 1].transpose(), delta) * sp
-            nabla_b[-l] = delta
-            nabla_w[-l] = np.dot(delta, activations[-l - 1].transpose())
-        return (nabla_w, nabla_b)
+                # back propagation
+                d = (a[-1] - y) * a[-1] * (1 - a[-1])	#BP1
+                for l in range(1, self.L):  # l is reverse index since last layer
+                    if l > 1:	#BP2
+                        d = np.dot(self.w[-l + 1].transpose(), d) * a[-l] * (1 - a[-l])
+                    self.w[-l] -= r * np.dot(d, a[-l - 1].transpose()) #BP3
+                    self.b[-l] -= r * np.sum(d, axis=1, keepdims=True) #BP4
+			
+            # evaluate
+            acc_cnt = sum([np.argmax(self.feed_forward(x)) == y for x, y in test])
+            print "Round {%d}: {%s}/{%d}" % (round, acc_cnt, len(test_data))
 
 
 if __name__ == '__main__':
     import mnist_loader
+
     train_data, valid_data, test_data = mnist_loader.load_data_wrapper()
-	# 输入为图片，格式为784维的向量(0-255)，所以输入层(第一层)具有784个神经元
-	# 输出为分类结果向量，手写数字的分类结果一共有十种(0-9)，所以输出层(第三层)有10个神经元。
-    dim = [784, 100, 10]
-    net = Network(dim)
-    
-    # 训练一个神经网络: 
-    net.SGD(train_data, 30, 10, 3.0, test_data)
+    net = Network([784, 100, 50, 10])
+    net.gradient_descent(train_data, test_data, epoches=100, m=10, eta=2.0)
 ```
+
+数据加载脚本：[`mnist_loader.py`](https://github.com/mnielsen/neural-networks-and-deep-learning/blob/master/src/mnist_loader.py) 。输入数据为二元组列表：`(input(784,1), output(10,1))`
+
+```bash
+$ python net.py
+Round {0}: {9136}/{10000}
+Round {1}: {9265}/{10000}
+Round {2}: {9327}/{10000}
+Round {3}: {9387}/{10000}
+Round {4}: {9418}/{10000}
+Round {5}: {9470}/{10000}
+Round {6}: {9469}/{10000}
+Round {7}: {9484}/{10000}
+Round {8}: {9509}/{10000}
+Round {9}: {9539}/{10000}
+Round {10}: {9526}/{10000}
+Round {11}: {9536}/{10000}
+Round {12}: {9575}/{10000}
+```
+
+一轮迭代后，网络在测试集上的分类准确率就达到90%，十次迭代后可达95%。
+
+不得不让人惊叹于神经网络之大能：以简单之原理，成复杂之工作。

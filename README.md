@@ -60,6 +60,5 @@
 
 ## [神经网络与深度学习](nndl/)
 
-* 神经网络原理
-* BP算法原理
+* [神经网络基础知识](nndl/nn-intro.md)
 * tensorflow环境与Helloworld
