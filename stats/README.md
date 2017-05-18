@@ -11,12 +11,14 @@
 
 
 
-# 心理统计
+# 统计基础
 
 来自：《心理统计——行为科学统计导论》
 
 * [描述统计](descriptive-statistics.md)
 * [推断统计](inferential-statistics.md)
+
+
 
 
 
@@ -28,6 +30,10 @@
 
 
 
+
+## 信息论
+
+[信息论基础](infomation-theory-intro.md)
 
 
 
